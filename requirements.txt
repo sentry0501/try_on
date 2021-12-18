@@ -1,0 +1,7 @@
+torch==1.6.0
+torchvision==0.7.0
+opencv-python==4.5.4.60
+fastapi
+starlette
+uvicorn
+python-multipart
