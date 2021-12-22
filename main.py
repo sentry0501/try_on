@@ -13,6 +13,7 @@ import torch.nn.functional as F
 from PIL import Image
 
 from fastapi import FastAPI, Body
+from fastapi.middleware.cors import CORSMiddleware
 from starlette.requests import Request
 import uvicorn
 import base64
@@ -70,6 +71,7 @@ def tryon(per_img,clo_img):
     # print(img_per)
     # clothes_ben = Image.open("dataset/test_clothes/003434_1.jpg").convert('RGB')
     clothes_ben = cv2.cvtColor(cv2.resize(img_clo,(192,256)), cv2.COLOR_BGR2RGB)
+    clothes_ben1 = cclothes_ben.copy()
     clothes_ben = Image.fromarray(clothes_ben)
     params = get_params(opt, clothes_ben.size)
     transform = get_transform(opt, params)
@@ -82,13 +84,13 @@ def tryon(per_img,clo_img):
     person_ben_tensor = transform(person_ben)
 
     # edge_ben = Image.open("dataset/test_edge/003434_1.jpg").convert('L')
-    mask = np.zeros(img_clo.shape[:2],np.uint8)
+    mask = np.zeros(clothes_ben1.shape[:2],np.uint8)
     bgdModel = np.zeros((1,65),np.float64)
     fgdModel = np.zeros((1,65),np.float64)
-    h,w = img_clo.shape[:2]
+    h,w = clothes_ben1.shape[:2]
     rect = (1,1,w,h)
     # print(rect)
-    cv2.grabCut(img_clo,mask,rect,bgdModel,fgdModel,5,cv2.GC_INIT_WITH_RECT)
+    cv2.grabCut(clothes_ben1,mask,rect,bgdModel,fgdModel,5,cv2.GC_INIT_WITH_RECT)
     mask2 = np.where((mask==2)|(mask==0),0,1).astype('uint8')
     edge_ben = mask2[:,:,np.newaxis]*255
     edge_ben_tensor = transform_E(edge_ben)
@@ -126,7 +128,13 @@ def tryon(per_img,clo_img):
     return im_b64
 
 app = FastAPI()
-
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 @app.post("/api")
 def try_on(request:Request,per_img: str = Body(...),clo_img: str = Body(...)):
     if request.method == "POST":  
