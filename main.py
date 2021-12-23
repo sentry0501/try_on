@@ -71,7 +71,7 @@ def tryon(per_img,clo_img):
     # print(img_per)
     # clothes_ben = Image.open("dataset/test_clothes/003434_1.jpg").convert('RGB')
     clothes_ben = cv2.cvtColor(cv2.resize(img_clo,(192,256)), cv2.COLOR_BGR2RGB)
-    clothes_ben1 = cclothes_ben.copy()
+    clothes_ben1 = clothes_ben.copy()
     clothes_ben = Image.fromarray(clothes_ben)
     params = get_params(opt, clothes_ben.size)
     transform = get_transform(opt, params)
